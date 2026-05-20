@@ -8,19 +8,21 @@
 # ///
 
 import argparse
+import os
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from unsloth.chat_templates import get_chat_template, standardize_data_formats
 
 def main():
     parser = argparse.ArgumentParser(description="Prepare JSONL data for Gemma-4 finetuning.")
-    parser.add_argument("--input_jsonl", type=str, required=True, help="Path to raw JSONL dataset.")
+    parser.add_argument("--input_dir", type=str, required=True, help="Path to directory containing raw JSONL datasets.")
     parser.add_argument("--output_jsonl", type=str, required=True, help="Path to save the prepared JSONL dataset.")
     parser.add_argument("--model_name", type=str, default="unsloth/gemma-4-E4B-it", help="Model name to load the tokenizer from.")
     args = parser.parse_args()
 
-    print(f"Loading raw dataset from {args.input_jsonl}...")
-    dataset = load_dataset("json", data_files={"train": args.input_jsonl}, split="train")
+    input_pattern = os.path.join(args.input_dir, "*.jsonl")
+    print(f"Loading raw datasets from {input_pattern}...")
+    dataset = load_dataset("json", data_files={"train": input_pattern}, split="train")
 
     print("Standardizing data formats...")
     if "conversations" not in dataset.column_names:
