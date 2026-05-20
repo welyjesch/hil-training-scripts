@@ -36,10 +36,16 @@ def main():
     parser.add_argument("--grad_acc", type=int, default=4, help="Gradient accumulation steps.")
     parser.add_argument("--lr", type=float, default=2e-4, help="Learning rate.")
     parser.add_argument("--max_seq_length", type=int, default=1024, help="Maximum sequence length.")
+    parser.add_argument("--save_steps", type=int, default=100, help="Save a checkpoint every X steps.")
+    parser.add_argument("--partial", type=int, default=None, help="Limit training data to the first X samples for debugging.")
     args = parser.parse_args()
 
     print(f"Loading prepared dataset from {args.dataset}...")
     dataset = load_dataset("json", data_files={"train": args.dataset}, split="train")
+
+    if args.partial:
+        print(f"Partial mode enabled: limiting dataset to first {args.partial} samples.")
+        dataset = dataset.select(range(min(args.partial, len(dataset))))
 
     print(f"Loading FastModel ({args.model_name})...")
     model, tokenizer = FastModel.from_pretrained(
@@ -71,6 +77,7 @@ def main():
         tokenizer=tokenizer,
         train_dataset=dataset,
         args=SFTConfig(
+            output_dir=args.output_dir,
             dataset_text_field="text",
             per_device_train_batch_size=args.batch_size,
             gradient_accumulation_steps=args.grad_acc,
@@ -78,6 +85,7 @@ def main():
             num_train_epochs=args.epochs,
             learning_rate=args.lr,
             logging_steps=1,
+            save_steps=args.save_steps,
             optim="adamw_8bit",
             weight_decay=0.001,
             lr_scheduler_type="linear",
@@ -94,7 +102,8 @@ def main():
     )
 
     print("Starting training...")
-    trainer.train()
+    # Resume from checkpoint if available in output_dir
+    trainer.train(resume_from_checkpoint=True)
     print("Training complete!")
 
     # DEFAULT POST-TRAINING BEHAVIOR: Save FP16 merged and LoRA adapters
