@@ -1,9 +1,10 @@
 # /// script
 # requires-python = "==3.12.*"
 # dependencies = [
-#     "datasets>=2.19.0",
-#     "transformers>=4.40.0",
-#     "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git",
+#     "datasets==4.3.0",
+#     "transformers==5.5.0",
+#     "tokenizers>=0.22.0,<=0.23.0",
+#     "unsloth @ git+https://github.com/unslothai/unsloth.git",
 # ]
 # ///
 

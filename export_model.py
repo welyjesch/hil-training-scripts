@@ -1,12 +1,13 @@
 # /// script
 # requires-python = "==3.12.*"
 # dependencies = [
-#     "torch>=2.4.0",
-#     "transformers>=4.40.0",
+#     "torch",
+#     "transformers==5.5.0",
+#     "tokenizers>=0.22.0,<=0.23.0",
 #     "peft",
-#     "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git",
+#     "unsloth @ git+https://github.com/unslothai/unsloth.git",
 #     "unsloth-zoo",
-#     "huggingface_hub",
+#     "huggingface_hub>=0.34.0",
 # ]
 # ///
 
