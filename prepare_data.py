@@ -1,14 +1,15 @@
 # /// script
-# requires-python = ">=3.10"
+# requires-python = "==3.12.*"
 # dependencies = [
-#     "datasets",
-#     "transformers",
-#     "unsloth",
+#     "datasets>=2.19.0",
+#     "transformers>=4.40.0",
+#     "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git",
 # ]
 # ///
 
 import argparse
 import os
+import glob
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from unsloth.chat_templates import get_chat_template, standardize_data_formats
@@ -20,9 +21,32 @@ def main():
     parser.add_argument("--model_name", type=str, default="unsloth/gemma-4-E4B-it", help="Model name to load the tokenizer from.")
     args = parser.parse_args()
 
-    input_pattern = os.path.join(args.input_dir, "*.jsonl")
-    print(f"Loading raw datasets from {input_pattern}...")
-    dataset = load_dataset("json", data_files={"train": input_pattern}, split="train")
+    pattern = os.path.join(args.input_dir, "*.jsonl")
+    all_files = glob.glob(pattern)
+    valid_files = []
+    for filepath in all_files:
+        if os.path.isfile(filepath) and os.path.getsize(filepath) > 0:
+            has_content = False
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        if line.strip():
+                            has_content = True
+                            break
+            except Exception:
+                pass
+            if has_content:
+                valid_files.append(filepath)
+            else:
+                print(f"Skipping empty or invalid file: {filepath}")
+        else:
+            print(f"Skipping empty file: {filepath}")
+
+    if not valid_files:
+        raise ValueError(f"No valid non-empty .jsonl files found in {args.input_dir}")
+
+    print(f"Loading raw datasets from {len(valid_files)} files...")
+    dataset = load_dataset("json", data_files={"train": valid_files}, split="train")
 
     print("Standardizing data formats...")
     if "conversations" not in dataset.column_names:

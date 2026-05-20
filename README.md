@@ -31,23 +31,23 @@ Fine-tuning Large Language Models is computationally intensive. Ensure your syst
 
 ### Step 1: Data Preparation
 
-The `prepare_data.py` script takes raw JSONL bilingual files containing `"english"` and `"text"` (Hiligaynon translation) columns, formats them into a standard `conversations` format with a system instruction, applies the model's chat template, and strips the leading `<bos>` token.
+The `prepare_data.py` script takes a folder containing raw JSONL bilingual files with `"english"` and `"text"` (Hiligaynon translation) columns, compiles them into a single training dataset, formats them into a standard `conversations` format with a system instruction, applies the model's chat template, and strips the leading `<bos>` token.
 
 #### Execution Command
 ```bash
 uv run prepare_data.py \
-  --input_jsonl data/translations_1_final.jsonl \
+  --input_dir data \
   --output_jsonl prepared_data.jsonl \
   --model_name unsloth/gemma-2-9b-it
 ```
 
 #### Command Arguments
-* `--input_jsonl` (Required): Path to your raw input JSONL dataset (e.g. `data/translations_1_final.jsonl`).
+* `--input_dir` (Required): Path to the directory containing your raw input JSONL datasets (e.g. `data`).
 * `--output_jsonl` (Required): Path where the prepared JSONL file containing the formatted chat template strings will be saved.
 * `--model_name` (Default: `unsloth/gemma-4-E4B-it`): The Hugging Face repo name of the target model. This is used to load the correct tokenizer and apply the correct chat template.
 
 #### What it does under the hood
-1. **Reads Raw Data:** Loads the input JSONL file containing the `english` and `text` columns.
+1. **Reads and Compiles Raw Data:** Scans the input directory for non-empty `.jsonl` files, filters out empty/invalid files, and loads them into a single compiled dataset.
 2. **Formats to Conversations:** Builds a structured `conversations` list in-memory with three turns:
    - `system`: Instruction to translate English to Hiligaynon.
    - `user`: The source English text.
