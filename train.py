@@ -9,13 +9,14 @@
 #     "protobuf",
 #     "unsloth",
 #     "unsloth-zoo",
-#     "trl",
+#     "trl>=0.18.2,<=0.24.0",
 #     "peft",
 #     "accelerate",
 #     "bitsandbytes",
 # ]
 # ///
 
+import unsloth
 import argparse
 import torch
 from datasets import load_dataset
