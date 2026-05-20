@@ -5,7 +5,8 @@
 #     "datasets==4.3.0",
 #     "transformers==5.5.0",
 #     "tokenizers>=0.22.0,<=0.23.0",
-#     "unsloth @ git+https://github.com/unslothai/unsloth.git",
+#     "unsloth",
+#     "unsloth-zoo",
 # ]
 # ///
 

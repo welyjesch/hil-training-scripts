@@ -7,7 +7,7 @@
 #     "tokenizers>=0.22.0,<=0.23.0",
 #     "sentencepiece",
 #     "protobuf",
-#     "unsloth @ git+https://github.com/unslothai/unsloth.git",
+#     "unsloth",
 #     "unsloth-zoo",
 #     "trl",
 #     "peft",
