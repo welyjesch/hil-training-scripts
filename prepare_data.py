@@ -1,6 +1,7 @@
 # /// script
 # requires-python = "==3.12.*"
 # dependencies = [
+#     "torch",
 #     "datasets==4.3.0",
 #     "transformers==5.5.0",
 #     "tokenizers>=0.22.0,<=0.23.0",
