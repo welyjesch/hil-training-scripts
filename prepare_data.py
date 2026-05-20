@@ -10,9 +10,10 @@
 import argparse
 import os
 import glob
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 from transformers import AutoTokenizer
 from unsloth.chat_templates import get_chat_template, standardize_data_formats
+import json
 
 def main():
     parser = argparse.ArgumentParser(description="Prepare JSONL data for Gemma-4 finetuning.")
@@ -23,30 +24,35 @@ def main():
 
     pattern = os.path.join(args.input_dir, "*.jsonl")
     all_files = glob.glob(pattern)
-    valid_files = []
+
+    all_records = []
+    skipped_files = 0
+    skipped_lines = 0
+
     for filepath in all_files:
-        if os.path.isfile(filepath) and os.path.getsize(filepath) > 0:
-            has_content = False
-            try:
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    for line in f:
-                        if line.strip():
-                            has_content = True
-                            break
-            except Exception:
-                pass
-            if has_content:
-                valid_files.append(filepath)
-            else:
-                print(f"Skipping empty or invalid file: {filepath}")
-        else:
-            print(f"Skipping empty file: {filepath}")
+        if not os.path.isfile(filepath):
+            continue
+        try:
+            with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
+                for line_idx, line in enumerate(f):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        record = json.loads(line)
+                        all_records.append(record)
+                    except json.JSONDecodeError as e:
+                        print(f"Skipping malformed JSON line in {filepath} at line {line_idx + 1}: {e}")
+                        skipped_lines += 1
+        except Exception as e:
+            print(f"Skipping file {filepath} due to read error: {e}")
+            skipped_files += 1
 
-    if not valid_files:
-        raise ValueError(f"No valid non-empty .jsonl files found in {args.input_dir}")
+    if not all_records:
+        raise ValueError(f"No valid JSON records found in {args.input_dir}")
 
-    print(f"Loading raw datasets from {len(valid_files)} files...")
-    dataset = load_dataset("json", data_files={"train": valid_files}, split="train")
+    print(f"Loaded {len(all_records)} valid records from {len(all_files) - skipped_files} files. (Skipped {skipped_lines} lines)")
+    dataset = Dataset.from_list(all_records)
 
     print("Standardizing data formats...")
     if "conversations" not in dataset.column_names:
